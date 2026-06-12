@@ -1,39 +1,50 @@
+Option Explicit
 
-Sub calculo_impostos()
+' ===== Configuração =====
+Private Const TAXA_IMPOSTO As Currency = 0.0625   ' 6,25%
+Private Const COL_BRUTO As Long = 4               ' Coluna D: valor bruto
+Private Const COL_LIQUIDO As Long = 5             ' Coluna E: valor líquido
+Private Const COL_TOTAL As Long = 6               ' Coluna F: total líquido
+Private Const LINHA_INICIAL As Long = 2           ' Dados começam na linha 2
 
-Const imposto As Single = 0.0625
-Dim valor As Single
-Dim i As Integer
-Dim valorTotal As Single
-i = 2
-valor = 0
-valorTotal = 0
+' Calcula o valor líquido (após imposto) de cada linha e o total geral.
+Public Sub CalcularImpostos()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet   ' Ou: ThisWorkbook.Worksheets("NomeDaPlanilha")
 
-Do Until (IsEmpty(Cells(i, 4)))
+    Dim ultimaLinha As Long
+    ultimaLinha = ws.Cells(ws.Rows.Count, COL_BRUTO).End(xlUp).Row
+    If ultimaLinha < LINHA_INICIAL Then Exit Sub   ' Nenhum dado
 
-valor = Cells(i, 4).Value - (Cells(i, 4).Value * imposto)
-Cells(i, 5).Value = valor
-valorTotal = valorTotal + valor
-i = i + 1
+    Application.ScreenUpdating = False
 
-Loop
+    Dim i As Long
+    Dim valorLiquido As Currency
+    Dim totalLiquido As Currency
 
-Cells(2, 6).Value = valorTotal
+    For i = LINHA_INICIAL To ultimaLinha
+        ' Ignora células não numéricas para evitar erro de tipo
+        If IsNumeric(ws.Cells(i, COL_BRUTO).Value) Then
+            valorLiquido = ws.Cells(i, COL_BRUTO).Value * (1 - TAXA_IMPOSTO)
+            ws.Cells(i, COL_LIQUIDO).Value = valorLiquido
+            totalLiquido = totalLiquido + valorLiquido
+        End If
+    Next i
 
+    ws.Cells(LINHA_INICIAL, COL_TOTAL).Value = totalLiquido
+
+    Application.ScreenUpdating = True
 End Sub
 
-Sub limpar_campos()
+' Limpa os resultados (coluna líquido e total), preservando os dados de entrada.
+Public Sub LimparCampos()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
 
-i = 2
+    Dim ultimaLinha As Long
+    ultimaLinha = ws.Cells(ws.Rows.Count, COL_BRUTO).End(xlUp).Row
+    If ultimaLinha < LINHA_INICIAL Then Exit Sub
 
-Do Until (IsEmpty(Cells(i, 4)))
-
-Cells(i, 5).Value = Empty
-
-i = i + 1
-
-Loop
-
-Cells(2, 6).Value = Empty
-
+    ws.Range(ws.Cells(LINHA_INICIAL, COL_LIQUIDO), ws.Cells(ultimaLinha, COL_LIQUIDO)).ClearContents
+    ws.Cells(LINHA_INICIAL, COL_TOTAL).ClearContents
 End Sub
