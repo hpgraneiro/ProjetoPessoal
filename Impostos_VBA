@@ -1,0 +1,39 @@
+
+Sub calculo_impostos()
+
+Const imposto As Single = 0.0625
+Dim valor As Single
+Dim i As Integer
+Dim valorTotal As Single
+i = 2
+valor = 0
+valorTotal = 0
+
+Do Until (IsEmpty(Cells(i, 4)))
+
+valor = Cells(i, 4).Value - (Cells(i, 4).Value * imposto)
+Cells(i, 5).Value = valor
+valorTotal = valorTotal + valor
+i = i + 1
+
+Loop
+
+Cells(2, 6).Value = valorTotal
+
+End Sub
+
+Sub limpar_campos()
+
+i = 2
+
+Do Until (IsEmpty(Cells(i, 4)))
+
+Cells(i, 5).Value = Empty
+
+i = i + 1
+
+Loop
+
+Cells(2, 6).Value = Empty
+
+End Sub
